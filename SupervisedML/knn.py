@@ -58,11 +58,8 @@ if __name__ == '__main__':
         
         t0 = datetime.now()
         print("Train accuracy: ", knn.score(Xtrain, Ytrain))
-        print("Time to compute train accuracy: ", datetime.now()-t0, " Train size: ", len(Ytrain))
+        print("Time to compute train accuracy: ", datetime.now()-t0, "\nTrain size: ", len(Ytrain))
         
         t0 = datetime.now()
         print(" Test accuracy: ", knn.score(Xtrain, Ytest))
-        print("Time to compute test accuracy: ", datetime.now()-t0, " Test size: ", len(Ytest))
-        
-        
-        
+        print("Time to compute test accuracy: ", datetime.now()-t0, "\nTest size: ", len(Ytest))
