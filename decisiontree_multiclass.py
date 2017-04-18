@@ -4,12 +4,14 @@ from datetime import datetime
 
 def entropy(y):
     N = len(y)
-    s1 = (y==1).sum()
-    if 0 == s1 or N == s1: # case if all in y are 0 or 1
-        return 0
-    p1 = float(s1)/ N
-    p0 = 1 - p1
-    return -p0*np.log2(p0)-p1*np.log2(p1)
+    classes = np.unique(y)
+    numClass=len(classes)
+    sums = np.zeros((numClass,1))
+    for c in classes:
+        # number of samples per class
+        sums[c] = (y==c).sum()
+    probs = sums / N #calculate probabilities
+    return float(sum(-probs*np.log2(probs)))
 
 class TreeNode:
     def __init__(self, depth=0,max_depth=None):
@@ -17,63 +19,60 @@ class TreeNode:
         self.max_depth = max_depth
 
     def fit(self, X, Y):
-        numClass = len(np.unique(Y))
-        for i in range(numClass):
-            Y[Y!=i] = 1
-            if len(Y) == 1 or len(set(Y)) == 1: # case of only one label in Y
+        if len(Y) == 1 or len(set(Y)) == 1: # case of only one label in Y
+            self.col = None
+            self.split = None
+            self.left = None
+            self.right = None
+            self.prediction = Y[0]
+        else:
+            D = X.shape[1]
+            cols = range(D)
+            max_ig = 0
+            best_col = None
+            best_split = None
+            for col in cols:
+                ig, split = self.find_split(X, Y, col)
+                if ig > max_ig:
+                    max_ig = ig
+                    best_col = col
+                    best_split = split
+            # no more information to be gained--predict model outputs
+            # base case...
+            if max_ig == 0:
+                print("Base case reached...predict")
                 self.col = None
                 self.split = None
                 self.left = None
                 self.right = None
-                self.prediction = Y[0]
+                self.prediction = np.round(Y.mean())
             else:
-                D = X.shape[1]
-                cols = range(D)
-                max_ig = 0
-                best_col = None
-                best_split = None
-                for col in cols:
-                    ig, split = self.find_split(X, Y, col)
-                    if ig > max_ig:
-                        max_ig = ig
-                        best_col = col
-                        best_split = split
-                # no more information to be gained--predict model outputs
-                # base case...
-                if max_ig == 0:
-                    print("Base case reached...predict")
-                    self.col = None
-                    self.split = None
+                # keep track of best col and split
+                self.col = best_col
+                self.split = best_split
+                # next base case when max depth reached
+                if self.depth == self.max_depth:
+                    print("Reached max depth...")
                     self.left = None
                     self.right = None
-                    self.prediction = np.round(Y.mean())
+                    self.prediction = [
+                        np.round(Y[X[:,best_col] < self.split].mean()),
+                        np.round(Y[X[:,best_col] >= self.split].mean()),
+                    ]
                 else:
-                    # keep track of best col and split
-                    self.col = best_col
-                    self.split = best_split
-                    # next base case when max depth reached
-                    if self.depth == self.max_depth:
-                        print("Reached max depth...")
-                        self.left = None
-                        self.right = None
-                        self.prediction = [
-                            np.round(Y[X[:,best_col] < self.split].mean()),
-                            np.round(Y[X[:,best_col] >= self.split].mean()),
-                        ]
-                    else:
-                        # not in a base case- do recursion
-                        print("Splitting...")
-                        left_idx = (X[:, best_col] < best_split)
-                        Xleft = X[left_idx]
-                        Yleft = Y[left_idx]
-                        self.left = TreeNode(self.depth + 1, self.max_depth)
-                        self.left.fit(Xleft, Yleft)
+                    # not in a base case- do recursion
+                    print("Splitting...")
+                    left_idx = (X[:, best_col] < best_split)
+                    Xleft = X[left_idx]
+                    Yleft = Y[left_idx]
+                    self.left = TreeNode(self.depth + 1, self.max_depth)
+                    self.left.fit(Xleft, Yleft)
 
-                        right_idx = (X[:, best_col] >= best_split)
-                        Xright = X[right_idx]
-                        Yright = Y[right_idx]
-                        self.right = TreeNode(self.depth + 1, self.max_depth)
-                        self.right.fit(Xright, Yright)
+                    right_idx = (X[:, best_col] >= best_split)
+                    Xright = X[right_idx]
+                    Yright = Y[right_idx]
+                    self.right = TreeNode(self.depth + 1, self.max_depth)
+                    self.right.fit(Xright, Yright)
 
     def tile_data(self,X,Y,tilesize=49):
         #divide MNIST images into 7x7px tiles
@@ -100,7 +99,7 @@ class TreeNode:
         max_ig = 0
         # loop over all boundaries until best split is found (with most info gain)
         for b in boundaries:
-            split = (x_values[b] + x_values[b+1]) /2
+            split = (x_values[b] + x_values[b+1])/2
             ig = self.information_gain(x_values, y_values, split)
             if ig > max_ig:
                 max_ig = ig
@@ -112,11 +111,21 @@ class TreeNode:
         y1 = y[x >= split]
         N = len(y)
         y0len = len(y0)
+        y1len = len(y1)
         if y0len == 0 or y0len == N:
             return 0
-        p0 = float(len(y0)) / N
-        p1 = 1 - p0
-        return entropy(y) - p0*entropy(y0) - p1*entropy(y1)
+        classes0 = np.unique(y0)
+        classes1 = np.unique(y1)
+        sums0 = np.zeros((len(classes0),1))
+        sums1 = np.zeros((len(classes1),1))
+        print(" {} {} ".format(y0len,y1len))
+        for c0 in classes0:
+            sums0[c0] = (y0==c0).sum()
+        for c1 in classes1:
+            sums1[c1] = (y1==c1).sum()
+        prob0 = sums0 / N
+        prob1 = sums1 / N
+        return float(entropy(y) - sum(prob0*entropy(y0)) - sum(prob1*entropy(y1)))
 
     def predict_one(self, x):
         if self.col is not None and self.split is not None:
