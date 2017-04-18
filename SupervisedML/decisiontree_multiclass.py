@@ -116,8 +116,8 @@ class TreeNode:
             return 0
         classes0 = np.unique(y0)
         classes1 = np.unique(y1)
-        sums0 = np.zeros((y0len,1))
-        sums1 = np.zeros((y1len,1))
+        sums0 = np.zeros((len(classes0),1))
+        sums1 = np.zeros((len(classes1),1))
         print(" {} {} ".format(y0len,y1len))
         for c0 in classes0:
             sums0[c0] = (y0==c0).sum()
@@ -125,7 +125,7 @@ class TreeNode:
             sums1[c1] = (y1==c1).sum()
         prob0 = sums0 / N
         prob1 = sums1 / N
-        return entropy(y) - prob0*entropy(y0) - prob1*entropy(y1)
+        return float(entropy(y) - sum(prob0*entropy(y0)) - sum(prob1*entropy(y1)))
 
     def predict_one(self, x):
         if self.col is not None and self.split is not None:
