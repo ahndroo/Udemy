@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-def get_data(limit = None):
+def get_train_data(limit = None):
     print('Reading in and transforming data...')
     df = pd.read_csv('MNISTtrain.csv')
     data = df.as_matrix()
