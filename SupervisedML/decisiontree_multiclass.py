@@ -175,7 +175,7 @@ if __name__ == '__main__':
     Xtrain, Ytrain = X[:Ntrain], Y[:Ntrain]
     Xvalid, Yvalid = X[Ntrain:], Y[Ntrain:]
 
-    model = DecisionTree(max_depth=None)
+    model = DecisionTree(max_depth=100)
     t0 = datetime.now()
     model.fit(Xtrain, Ytrain)
 
