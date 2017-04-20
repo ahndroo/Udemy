@@ -170,7 +170,7 @@ class DecisionTree:
 if __name__ == '__main__':
     X, Y = get_train_data()
     N = int(len(Y)/4)
-    X = X[:N],Y=Y[:N] # divide data in quarter
+    X = X[:N];Y=Y[:N] # divide data in quarter
     Ntrain = int(len(Y)*.8) #use 80% of data for train, 20% for valid
     Xtrain, Ytrain = X[:Ntrain], Y[:Ntrain]
     Xvalid, Yvalid = X[Ntrain:], Y[Ntrain:]
