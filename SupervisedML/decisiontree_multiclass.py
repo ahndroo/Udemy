@@ -74,15 +74,6 @@ class TreeNode:
                     self.right = TreeNode(self.depth + 1, self.max_depth)
                     self.right.fit(Xright, Yright)
 
-    def tile_data(self,X,Y,tilesize=49):
-        #divide MNIST images into 7x7px tiles
-        N,D = X.shape
-        numTile = int(D/tilesize)
-        xTile = np.zeros((N,numTile))
-        for i in range(numTile):
-            tiledata = X[:,i*tilesize:(i+1)*tilesize]
-            xTile[:,i] = np.mean(tiledata,axis=1) #what do this
-
     def find_split(self, X, Y, col):
         # sorts data from lowest value to highest
         x_values = X[:,col]
@@ -167,6 +158,17 @@ class DecisionTree:
         P = self.predict(X)
         return np.mean(P == Y)
 
+    def tile_data(self,X,tilesize=49):
+        #divide MNIST images into 7x7px tiles
+        print("Creating input image tiles")
+        N,D = X.shape
+        numTile = int(D/tilesize)
+        xTile = np.zeros((N,numTile))
+        for i in range(numTile):
+            tiledata = X[:,i*tilesize:(i+1)*tilesize]
+            xTile[:,i] = np.mean(tiledata,axis=1) #what do this
+        return xTile
+
 if __name__ == '__main__':
     X, Y = get_train_data()
     N = int(len(Y)/4)
@@ -176,6 +178,7 @@ if __name__ == '__main__':
     Xvalid, Yvalid = X[Ntrain:], Y[Ntrain:]
 
     model = DecisionTree(max_depth=100)
+    xTile = m.tile_data(Xtrain)
     t0 = datetime.now()
     model.fit(Xtrain, Ytrain)
 
