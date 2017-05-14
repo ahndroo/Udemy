@@ -27,33 +27,6 @@ Xtest = X[-100:]
 Ytest = Y[-100:]
 Ytest_ind = y2indicator(Ytest,K)
 
-
-Skip to content
-This repository
-
-    Pull requests
-    Issues
-    Gist
-
-    @ahndroo
-
-87
-442
-
-    607
-
-lazyprogrammer/machine_learning_examples
-Code
-Issues 1
-Pull requests 4
-Projects 0
-Wiki
-Pulse
-Graphs
-machine_learning_examples/ann_logistic_extra/logistic_softmax_train.py
-21b821c on Jun 14, 2016
-@lazyprogrammer lazyprogrammer e-commerce example
-76 lines (60 sloc) 1.75 KB
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -129,7 +102,3 @@ legend1, = plt.plot(train_costs, label='train cost')
 legend2, = plt.plot(test_costs, label='test cost')
 plt.legend([legend1, legend2])
 plt.show()
-
-    Contact GitHub API Training Shop Blog About
-
-    © 2017 GitHub, Inc. Terms Privacy Security Status Help
