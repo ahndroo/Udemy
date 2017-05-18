@@ -33,7 +33,7 @@ def main():
     W2 = np.random.randn(M, K) / np.sqrt(M)
     b2 = np.zeros(K)
 
-    # 1. batch GD
+    # 1. constant learning rate
     LL_batch = []
     CR_batch = []
 
@@ -63,21 +63,22 @@ def main():
     pY, _ = forward(Xtest, W1, b1, W2, b2)
     print()"Final error rate:", error_rate(pY, Ytest))
 
-    # 2. batch GD w/ momentum
+    # 2. RMS prop
     W1 = np.random(D, M) / 28
     b1 = np.zeros(M)
     W2 = np.random.randn(M, K) / np.sqrt(M)
     b2 = np.zeros(K)
 
-    LL_momentum = []
-    CR_momentum = []
+    LL_rms = []
+    CR_rms = []
 
-    mu = 0.9
-    dW2 = 0
-    db2 = 0
-    dW1 = 0
-    db1 = 0
-
+    lr0 = 0.001 # if too high, will result with NaN
+    cache_W2 = 0
+    cache_b2 = 0
+    cache_W1 = 0
+    cache_b1 = 0
+    decay_rate = 0.999
+    eps = 0.0000000001
     for i in range(max_iter):
         for j in range(n_batches):
             xBatch = Xtrain[j*batch_sz:(j*batch_sz + batch_sz),:]
@@ -85,25 +86,32 @@ def main():
             pYbatch, Z= forward(xBatch, W1, b1, W2, b2)
 
             # updates
-            dW2 = mu*dW2 - lr*(derivative_w2(Z,yBatch, pYbatch) + reg*W2)
-            W1 += dW2
-            db2 = mu*db2 - lr*(derivative_b2(yBatch, pYbatch) + reg*b2)
-            b2 += db2
-            dW1 = mu*dW1 - lr*(derivative_w1(Xbatch, Z, Ybatch, pYbatch, W2) + reg*W1)
-            W1 += dW1
-            db1 = mu*db1 - lr*(derivative_b1(Z, Ybatch, pYbatch, W2) + reg*b1)
-            b1 += db1
+            gW2 = derivative_w2(Z, Ybatch, pYbatch) + reg*W2
+            cache_W2 = decay_rate*cache_W2 + (1 - decay_rate)*gW2*gW2
+            W2 -= lr0 * gW2 / (np.sqrt(cache_W2) + eps)
+
+            gb2 = derivative_b2(Ybatch, pYbatch) + reg*b2
+            cache_b2 = decay_rate*cache_b2 + (1 - decay_rate)*gb2*gb2
+            b2 -= lr0 * gb2 / (np.sqrt(cache_b2) + eps)
+
+            gW1 = derivative_w1(Xbatch, Z, Ybatch, pYbatch, W2) + reg*W1
+            cache_W1 = decay_rate*cache_W1 + (1 - decay_rate)*gW1*gW1
+            W1 -= lr0 * gW1 / (np.sqrt(cache_W1) + eps)
+
+            gb1 = derivative_b1(Z, Ybatch, pYbatch, W2) + reg*b1
+            cache_b1 = decay_rate*cache_b1 + (1 - decay_rate)*gb1*gb1
+            b1 -= lr0 * gb1 / (np.sqrt(cache_b1) + eps)
 
             if j % print_period == 0:
                 # calculate just for LL
                 pY, _ = forward(Xtest, W1, b1, W2, b2)
                 # print "pY:", pY
                 ll = cost(pY, Ytest_ind)
-                LL_momentum.append(ll)
+                LL_rms.append(ll)
                 print("Cost at iteration i=%d, j=%d: %.6f", % (i, j, ll))
 
                 err = error_rate(pY, Ytest)
-                CR_momentum.append(err)
+                CR_rms.append(err)
                 print("Error rate:", err)
     pY, _ = forward(Xtest, W1, b1, W2, b2)
     print()"Final error rate:", error_rate(pY, Ytest))
@@ -166,14 +174,10 @@ def main():
     pY, _ = forward(Xtest, W1, b1, W2, b2)
     print()"Final error rate:", error_rate(pY, Ytest))
 
-
-
-    plt.plot(LL_batch, label="batch")
-    plt.plot(LL_momentum, label="momentum")
-    plt.plot(LL_nest, label="nesterov")
-    plt.legend()
-    plt.show()
-
+plt.plot(LL_batch, label='const')
+plt.plot(LL_rms, label='rms')
+plt.legend()
+plt.show()
 
 
 if __name__ == '__main__':
