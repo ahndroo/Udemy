@@ -56,6 +56,7 @@ def y2indicator(y):
 
 
 def getData(balance_ones=True):
+    print("Reading in data...")
     # images are 48x48 = 2304 size vectors
     # N = 35887
     Y = []

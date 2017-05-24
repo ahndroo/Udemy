@@ -79,7 +79,7 @@ def main():
     for i in range(N):
         T[i, Y[i]] = 1 # one hot encoding for targets
 
-    m = nn.NeuralNetwork(numHiddenLayer=1,numHiddenUnits=200,actFunc="LeakyReLu")
+    m = nn.NeuralNetwork(numHiddenLayer=1,numHiddenUnits=200,actFunc="Tanh")
     trainCost, validCost, accTrain, accValid = m.train(X, T, epochs=10000, learning_rate=10e-7, reg=10e-7)
 
     print("Final Train Accuracy {}".format(accTrain))

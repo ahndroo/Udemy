@@ -94,6 +94,7 @@ def main():
             db1 = mu*db1 - lr*(derivative_b1(Z, Ybatch, pYbatch, W2) + reg*b1)
             b1 += db1
 
+
             if j % print_period == 0:
                 # calculate just for LL
                 pY, _ = forward(Xtest, W1, b1, W2, b2)
