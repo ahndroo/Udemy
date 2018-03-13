@@ -2,38 +2,30 @@
 import numpy as np
 import pandas as pd
 
-
 def init_weight_and_bias(M1, M2):
     W = np.random.randn(M1, M2) / np.sqrt(M1)
     b = np.zeros(M2)
     return W.astype(np.float32), b.astype(np.float32)
 
-
 def init_filter(shape, poolsz):
-    w = np.random.randn(*shape) / np.sqrt(np.prod(shape[1:]) + shape[0]*np.prod(shape[2:] / np.prod(poolsz)))
+    w = np.random.randn(*shape) / np.sqrt(np.prod(shape[:-1]) + shape[-1]*np.prod(shape[:-2] / np.prod(poolsz)))
     return w.astype(np.float32)
-
 
 def relu(x):
     return x * (x > 0)
 
-
 def sigmoid(A):
     return 1 / (1 + np.exp(-A))
-
 
 def softmax(A):
     expA = np.exp(A)
     return expA / expA.sum(axis=1, keepdims=True)
 
-
 def sigmoid_cost(T, Y):
     return -(T*np.log(Y) + (1-T)*np.log(1-Y)).sum()
 
-
 def cost(T, Y):
     return -(T*np.log(Y)).sum()
-
 
 def cost2(T, Y):
     # same as cost(), just uses the targets to index Y
@@ -41,10 +33,8 @@ def cost2(T, Y):
     N = len(T)
     return -np.log(Y[np.arange(N), T]).mean()
 
-
 def error_rate(targets, predictions):
     return np.mean(targets != predictions)
-
 
 def y2indicator(y):
     N = len(y)
@@ -53,7 +43,6 @@ def y2indicator(y):
     for i in range(N):
         ind[i, y[i]] = 1
     return ind
-
 
 def getData(balance_ones=True):
     print("Reading in data...")
@@ -82,14 +71,12 @@ def getData(balance_ones=True):
 
     return X, Y
 
-
 def getImageData():
     X, Y = getData()
     N, D = X.shape
     d = int(np.sqrt(D))
     X = X.reshape(N, 1, d, d)
     return X, Y
-
 
 def getBinaryData():
     Y = []
@@ -105,7 +92,6 @@ def getBinaryData():
                 Y.append(y)
                 X.append([int(p) for p in row[1].split()])
     return np.array(X) / 255.0, np.array(Y)
-
 
 def crossValidation(model, X, Y, K=5):
     # split data into K parts
@@ -123,3 +109,11 @@ def crossValidation(model, X, Y, K=5):
         errors.append(err)
     print("errors:", errors)
     return np.mean(errors)
+
+def makeDiv(N, batch_sz=1):
+    # takes input array and output array thats divisible by batch_sz
+    # will lose a few data points in the process
+    if N < 100:
+        return print("Get more data!")
+    rem = N % batch_sz
+    return N - rem
