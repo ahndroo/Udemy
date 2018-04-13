@@ -16,4 +16,3 @@ from codingEx3 import C2F
 temps = [10, -20, -289, 100]
 for t in temps:
     C2F(t)
- n
